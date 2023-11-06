@@ -34,7 +34,49 @@ public:
         }
     }
 
+    Event& operator=(const Event& o) {
+        if (this == &o) {
+            return *this;
+        }
+        this->name = o.name;
+        this->date = o.date;
+        this->time = o.time;
+        this->maxSeats = o.maxSeats;
 
+      
+        delete[] this->seatNumbers;
+
+     
+        if (o.seatNumbers != nullptr) {
+            this->seatNumbers = new int[o.maxSeats];
+            for (int i = 0; i < o.maxSeats; i++) {
+                this->seatNumbers[i] = o.seatNumbers[i];
+            }
+        }
+        else {
+            this->seatNumbers = nullptr;
+        }
+
+        return *this;
+    }
+
+
+    Event(const Event& e) {
+        this->name = e.name;
+        this->date = e.date;
+        this->time = e.time;
+        this->maxSeats = e.maxSeats;
+
+        if (e.seatNumbers != nullptr) {
+            this->seatNumbers = new int[e.maxSeats];
+            for (int i = 0; i < e.maxSeats; i++) {
+                this->seatNumbers[i] = e.seatNumbers[i];
+            }
+        }
+        else {
+            this->seatNumbers = nullptr;
+        }
+    }
     ~Event() {
         if (this->seatNumbers != nullptr) {
             delete[] this->seatNumbers;
