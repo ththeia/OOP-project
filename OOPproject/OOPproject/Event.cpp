@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <stdexcept>  // for exception handling
 
 using namespace std;
 
@@ -12,11 +11,13 @@ private:
     int maxSeats;
     int* seatNumbers;
 
-    static int staticField;  // Static field
+    static int totalEvents; 
+    
+public:
+    const int DEFAULT_MAX_SEATS = 50;
+
 
 public:
-    const int constantField = 42;  // Constant field
-
     Event() {
         name = "";
         date = "";
@@ -25,7 +26,7 @@ public:
         seatNumbers = nullptr;
     }
 
-    Event(string name, string date, string time, int maxSeats) {
+    Event( string name, string date, string time, int maxSeats) {
         this->name = name;
         this->date = date;
         this->time = time;
@@ -37,9 +38,36 @@ public:
         else {
             this->seatNumbers = nullptr;
         }
+        totalEvents++;
     }
 
-    // Copy constructor
+    Event& operator=(const Event& o) {
+        if (this == &o) {
+            return *this;
+        }
+        this->name = o.name;
+        this->date = o.date;
+        this->time = o.time;
+        this->maxSeats = o.maxSeats;
+
+      
+        delete[] this->seatNumbers;
+
+     
+        if (o.seatNumbers != nullptr) {
+            this->seatNumbers = new int[o.maxSeats];
+            for (int i = 0; i < o.maxSeats; i++) {
+                this->seatNumbers[i] = o.seatNumbers[i];
+            }
+        }
+        else {
+            this->seatNumbers = nullptr;
+        }
+
+        return *this;
+    }
+
+
     Event(const Event& e) {
         this->name = e.name;
         this->date = e.date;
@@ -56,60 +84,54 @@ public:
             this->seatNumbers = nullptr;
         }
     }
-
-    // Copy assignment operator
-    Event& operator=(const Event& o) {
-        if (this == &o) {
-            return *this;
-        }
-
-        this->name = o.name;
-        this->date = o.date;
-        this->time = o.time;
-        this->maxSeats = o.maxSeats;
-
-        delete[] this->seatNumbers;
-
-        if (o.seatNumbers != nullptr) {
-            this->seatNumbers = new int[o.maxSeats];
-            for (int i = 0; i < o.maxSeats; i++) {
-                this->seatNumbers[i] = o.seatNumbers[i];
-            }
-        }
-        else {
-            this->seatNumbers = nullptr;
-        }
-
-        return *this;
-    }
-
-    // Destructor
     ~Event() {
         if (this->seatNumbers != nullptr) {
             delete[] this->seatNumbers;
         }
     }
-
-    // Public methods for reading and writing values
-    void setName(const string& newName) {
-        this->name = newName;
+    string getName()  {
+        return this->name;
     }
 
-    void setDate(const string& newDate) {
-        this->date = newDate;
+     string getDate()  {
+        return this->date;
+     }
+
+     string getTime() {
+        return this->time;
+     }
+
+    int getMaxSeats()  {
+        return this->maxSeats;
     }
 
-    void setTime(const string& newTime) {
-        this->time = newTime;
+    int* getSeatNumbers() {
+        return this->seatNumbers;
+    }
+    static int getTotalEvents() {
+        return totalEvents;
+    }
+
+    int getDefaultMaxSeats() const {
+        return DEFAULT_MAX_SEATS;
+
+    }
+    void setName(string name) {
+        this->name = name;
+    }
+
+    void setDate(string date) {
+        this->date = date;
+    }
+
+    void setTime(string time) {
+        this->time = time;
     }
 
     void setMaxSeats(int newMaxSeats) {
         if (newMaxSeats >= 0) {
             this->maxSeats = newMaxSeats;
-
-            // Reallocate seatNumbers if necessary
             delete[] this->seatNumbers;
-
             if (newMaxSeats > 0) {
                 this->seatNumbers = new int[newMaxSeats];
             }
@@ -118,43 +140,13 @@ public:
             }
         }
         else {
-            throw invalid_argument("Maximum seats must be non-negative.");
+            cout << "Error: Maximum seats must be non-negative." << endl;
         }
     }
-
-    // Generic methods for processing/displaying attributes
-    void displayEventInfo() const {
-        cout << "Event Name: " << this->name << endl;
-        cout << "Event Date: " << this->date << endl;
-        cout << "Event Time: " << this->time << endl;
-        cout << "Maximum Seats: " << this->maxSeats << endl;
+    bool isValid() const {
+        return !this->name.empty() && !this->date.empty() && !this->time.empty() && this->maxSeats > 0;
     }
 
-    void processEvent() const {
-        // Perform some processing based on event attributes
-        cout << "Processing Event: " << this->name << endl;
-    }
-
-    // Static field getter
-    static int getStaticField() {
-        return staticField;
-    }
-
-    // Static field setter
-    static void setStaticField(int value) {
-        staticField = value;
-    }
-
-    // Overloaded << operator for displaying Event
-    friend ostream& operator<<(ostream& out, const Event& event) {
-        out << "Event Name: " << event.name << endl;
-        out << "Event Date: " << event.date << endl;
-        out << "Event Time: " << event.time << endl;
-        out << "Maximum Seats: " << event.maxSeats << endl;
-        return out;
-    }
-
-    // Overloaded >> operator for input
     friend istream& operator>>(istream& in, Event& event) {
         cout << "Enter event name: ";
         getline(in, event.name);
@@ -165,84 +157,50 @@ public:
         cout << "Enter maximum number of seats: ";
         in >> event.maxSeats;
 
-        // Validate input
         if (event.maxSeats > 0) {
             event.seatNumbers = new int[event.maxSeats];
-        }
-        else {
-            event.seatNumbers = nullptr;
         }
 
         return in;
     }
 
-    // Indexing operator []
-    int& operator[](int index) {
-        if (index >= 0 && index < maxSeats) {
-            return seatNumbers[index];
+    friend ostream& operator<<(ostream& out, const Event& event) {
+        out << "Event Name: " << event.name << endl;
+        out << "Event Date: " << event.date << endl;
+        out << "Event Time: " << event.time << endl;
+        out << "Maximum Seats: " << event.maxSeats << endl;
+        return out;
+    }
+};
+
+
+    int main() {
+
+        Event event1;    
+        cin >> event1;
+
+        
+        if (event1.isValid()) {
+            cout << "Event Details:\n" << event1;
         }
         else {
-            throw out_of_range("Invalid index.");
+            cout << "Invalid event details entered.\n";
         }
-    }
 
-    // Arithmetic operators (+, -) for Event
-    Event operator+(const Event& other) const {
-        Event result = *this;
-        result.maxSeats += other.maxSeats;
-        return result;
-    }
+        Event event2("Event 2", "2023-11-05", "15:00", 100);
+        cout << "Event Details:\n" << event2;
 
-    Event operator-(const Event& other) const {
-        Event result = *this;
-        result.maxSeats -= other.maxSeats;
-        // Ensure non-negative maxSeats
-        result.maxSeats = max(0, result.maxSeats);
-        return result;
-    }
 
-    // Increment (++) and Decrement (--) operators for Event
-    Event& operator++() {
-        // Prefix increment (++event)
-        this->maxSeats++;
-        return *this;
-    }
+        // copy constructor
+        Event event3(event1);
+        cout << "Event 3 (Copy of Event 1) Details:\n" << event3;
 
-    Event operator++(int) {
-        // Postfix increment (event++)
-        Event temp = *this;
-        ++(*this);
-        return temp;
-    }
+        //  = operator
+        Event event4;
+        event4 = event2;
+        cout << "Event 4 (Copy of Event 2) Details:\n" << event4;
 
-    Event& operator--() {
-        // Prefix decrement (--event)
-        // Ensure non-negative maxSeats
-        this->maxSeats = max(0, this->maxSeats - 1);
-        return *this;
-    }
+        event2 = event3 = event1;
 
-    Event operator--(int) {
-        // Postfix decrement (event--)
-        Event temp = *this;
-        --(*this);
-        return temp;
-    }
-
-    // Cast operator to string
-    operator string() const {
-        return "Event: " + name + " - Date: " + date + " - Time: " + time;
-    }
-
-    // Negation operator !
-    bool operator!() const {
-        // Event is valid if name, date, and time are not empty, and maxSeats is positive
-        return name.empty() || date.empty() || time.empty() || maxSeats <= 0;
-    }
-
-    // Conditional operators (<, >, <=, >=)
-    bool operator<(const Event& other) const {
-        return maxSeats < other.maxSeats;
-    }
-
-    bool operator>(const Event& other) const
+        return 0;
+    };
